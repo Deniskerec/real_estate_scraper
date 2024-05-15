@@ -21,7 +21,5 @@ def nepremine_net_access_test():
         return None
 
 
-nepremine_net_access_test()
-
-
-
+if __name__ == '__main__':
+    nepremine_net_access_test()
