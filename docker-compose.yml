@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: real_estate
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - real_estate_network
+    ports:
+      - "5432:5432"
+
+networks:
+  real_estate_network:
+    driver: bridge
