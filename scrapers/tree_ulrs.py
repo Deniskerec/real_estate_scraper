@@ -6,7 +6,6 @@ import psycopg2
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 def find_all_options(url, headers):
     response = requests.get(url, headers=headers)
 
@@ -56,7 +55,6 @@ def find_all_options(url, headers):
 
     return options_dict
 
-
 def replace_special_characters(text):
     replacements = {
         'č': 'c',
@@ -68,14 +66,12 @@ def replace_special_characters(text):
         text = text.replace(old, new)
     return text
 
-
 def print_tree(options_dict):
     for p_key, p_value in options_dict['p'].items():
         print(f"{p_value}:")
         for r_key, r_value in options_dict['r'].items():
             n_values = " ".join([n_value for n_key, n_value in options_dict['n'].items()])
             print(f"  {r_value}: {n_values}")
-
 
 def generate_urls(options_dict):
     base_url = 'https://www.nepremicnine.net/oglasi'
@@ -84,9 +80,8 @@ def generate_urls(options_dict):
         for r_key, r_value in options_dict['r'].items():
             for n_key, n_value in options_dict['n'].items():
                 url = f"{base_url}-{p_value}/{r_value}/{n_value}/"
-                urls.append(url)
+                urls.append((url, p_value, r_value, n_value))
     return urls
-
 
 def save_urls_to_db(urls):
     # Database connection parameters
@@ -104,20 +99,22 @@ def save_urls_to_db(urls):
     # Create table if it doesn't exist
     cur.execute("""
         CREATE TABLE IF NOT EXISTS urls (
-            id SERIAL PRIMARY KEY,<
-            url TEXT NOT NULL
+            id SERIAL PRIMARY KEY,
+            url TEXT NOT NULL,
+            p_value TEXT NOT NULL,
+            r_value TEXT NOT NULL,
+            n_value TEXT NOT NULL
         )
     """)
 
     # Insert URLs into the table
-    for url in urls:
-        cur.execute("INSERT INTO urls (url) VALUES (%s)", (url,))
+    for url, p_value, r_value, n_value in urls:
+        cur.execute("INSERT INTO urls (url, p_value, r_value, n_value) VALUES (%s, %s, %s, %s)", (url, p_value, r_value, n_value))
 
     # Commit and close
     conn.commit()
     cur.close()
     conn.close()
-
 
 if __name__ == '__main__':
     url = 'https://nepremicnine.com/'
@@ -132,14 +129,13 @@ if __name__ == '__main__':
     print("Tree structure of options:")
     print_tree(options_dict)
 
-# IF YOU WANT TO RERUN the database and URL creating uncomment
-# # Generate URLs
-# urls = generate_urls(options_dict)
-#
-# # Print generated URLs
-# print("\nGenerated URLs:")
-# for url in urls:
-#     print(url)
-#
-# # Save URLs to database
-# save_urls_to_db(urls)
+    # # Generate URLs
+    # urls = generate_urls(options_dict)
+    #
+    # # Print generated URLs
+    # print("\nGenerated URLs:")
+    # for url, p_value, r_value, n_value in urls:
+    #     print(f"{url} (p: {p_value}, r: {r_value}, n: {n_value})")
+    #
+    # # Save URLs to database
+    # save_urls_to_db(urls)
